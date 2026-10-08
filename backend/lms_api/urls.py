@@ -1,7 +1,11 @@
 from django.contrib import admin
-from django.urls import path,include
-from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
-from lms_api.core.views import *
-router=DefaultRouter(); router.register('courses',CourseViewSet,basename='course')
-urlpatterns=[path('admin/',admin.site.urls),path('api/auth/token/',TokenObtainPairView.as_view()),path('api/auth/token/refresh/',TokenRefreshView.as_view()),path('api/auth/signup/',SignupView.as_view()),path('api/profile/',ProfileView.as_view()),path('api/enrollments/',EnrollmentView.as_view()),path('api/lessons/<int:pk>/complete/',LessonCompleteView.as_view()),path('api/',include(router.urls))]
+from django.urls import include, path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('api/', include('lms_api.core.urls')),
+]

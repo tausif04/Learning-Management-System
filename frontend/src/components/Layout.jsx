@@ -1,0 +1,2 @@
+import Navbar from './Navbar'
+export default function Layout({children}){return <><Navbar/><main>{children}</main><footer className="border-t border-slate-200 bg-white py-8 mt-16"><div className="container flex flex-col gap-2 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between"><span>© {new Date().getFullYear()} LearnFlow LMS</span><span>Learn. Practice. Progress.</span></div></footer></>}

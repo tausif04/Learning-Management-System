@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-set -e
+set -o errexit
 python manage.py migrate
 python manage.py collectstatic --noinput

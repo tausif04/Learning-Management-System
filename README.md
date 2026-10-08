@@ -1,103 +1,203 @@
-# LearnHub — Django + React LMS
+# LearnFlow LMS — Django REST + React
 
-A complete beginner-friendly Learning Management System with a Django REST Framework backend and React/Vite frontend.
+A complete Learning Management System built from the provided LMS API requirements and the supplied React + Tailwind boilerplate.
+
+## What changed from the earlier version
+
+The first implementation used a custom API shape. This version was rebuilt around the supplied LMS API documentation:
+
+- `/api/token/`
+- `/api/token/refresh/`
+- `/api/token/verify/`
+- `/api/user/auth/`
+- `/api/user/profile/student/`
+- `/api/user/profile/teacher/`
+- `/api/categories/`
+- `/api/courses/`
+- `/api/lessons/`
+- `/api/materials/`
+- `/api/enrollments/`
+- `/api/enrollments/enroll/`
+- `/api/questions/`
+
+Additional endpoints were added only where the project plan requires behavior that the supplied API documentation does not expose directly, especially lesson completion/progress.
 
 ## Features
 
-- JWT authentication: signup, login, refresh, logout/session handling
-- Protected React routes
-- Course catalog
-- Course details with modules and lessons
-- Course enrollment
-- Mark lessons complete/incomplete
-- Automatic course progress percentage
-- User profile editing
-- Enrolled-course dashboard
-- Responsive UI
-- CORS-enabled API
+### Authentication
+- Register
+- Login with JWT
+- Access-token refresh
+- Protected routes
+- Logout/session cleanup
+
+### Dashboard
+- Enrolled courses
+- Course progress
+- Completed-course count
+- Average learning progress
+- Continue-learning cards
+
+### Course catalog
+- Course cards
+- Search
+- Category filter
+- Instructor information
+- Enrollment state
+
+### Course details
+- Course description
+- Instructor
+- Lesson list
+- Lesson content
+- Video links
+- Downloadable materials
+- Enrollment
+- Mark lesson complete/incomplete
+- Progress calculation
+- Course Q&A
+
+### Profile
+- Edit name/email/bio
+- Avatar URL
+- Role display
+- Enrolled-course progress
+
+### Backend
+- Django REST Framework
+- SimpleJWT
+- SQLite locally / PostgreSQL on Render
+- CORS
+- Django admin
+- Demo seed command
 
 ## Project structure
 
 ```text
-lms-project/
-├── backend/       # Django + DRF + SimpleJWT
-├── frontend/      # React + Vite + Axios + React Router
-└── README.md
+LMS-Django-React/
+├── backend/
+│   ├── lms_api/
+│   │   ├── core/
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   └── wsgi.py
+│   ├── manage.py
+│   ├── requirements.txt
+│   ├── build.sh
+│   └── Procfile
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── lib/
+│   │   └── pages/
+│   ├── package.json
+│   ├── vite.config.js
+│   └── vercel.json
+└── render.yaml
 ```
 
-## Backend setup
+## Local setup
+
+### Backend
 
 ```bash
 cd backend
 python -m venv .venv
-# Windows: .venv\\Scripts\\activate
-# macOS/Linux: source .venv/bin/activate
+# Windows
+.venv\Scripts\activate
+# macOS/Linux
+source .venv/bin/activate
+
 pip install -r requirements.txt
 python manage.py migrate
+python manage.py seed_demo
 python manage.py createsuperuser
 python manage.py runserver
 ```
 
-API base: `http://127.0.0.1:8000/api/`
+Demo account:
 
-### API endpoints
+```text
+username: instructor
+password: password123
+```
 
-- `POST /api/auth/signup/`
-- `POST /api/auth/token/`
-- `POST /api/auth/token/refresh/`
-- `GET/PATCH /api/profile/`
-- `GET /api/courses/`
-- `GET /api/courses/<id>/`
-- `POST /api/courses/<id>/enroll/`
-- `GET /api/enrollments/`
-- `POST /api/lessons/<id>/complete/`
-- Django admin: `/admin/`
-
-Create courses/modules/lessons from Django admin, then enroll users from the frontend.
-
-## Frontend setup
+### Frontend
 
 ```bash
 cd frontend
 npm install
-copy .env.example .env       # Windows
-# cp .env.example .env       # macOS/Linux
-npm run dev
 ```
 
-Set `.env`:
+Create `.env`:
 
 ```env
 VITE_API_URL=http://127.0.0.1:8000/api
 ```
 
-For the deployed backend, use:
+Run:
 
-```env
-VITE_API_URL=https://lms-backend-xpwc.onrender.com/api
+```bash
+npm run dev
 ```
-
-The supplied deployed backend currently returned HTTP 503 during project preparation, so the frontend is intentionally configured through `VITE_API_URL` rather than hard-coding an assumed schema.
 
 ## Deployment
 
 ### Backend — Render
 
-- Root directory: `backend`
-- Build command: `./build.sh`
-- Start command: `gunicorn lms_api.wsgi:application`
-- Add `DATABASE_URL` and production secret/configuration if using PostgreSQL.
-- Set `DEBUG=False` and a secure `SECRET_KEY` for production.
+Set the backend root directory to `backend`.
 
-For a production deployment, replace SQLite with PostgreSQL and restrict `ALLOWED_HOSTS` and CORS origins.
+Build command:
 
-### Frontend — Vercel/Netlify
+```bash
+./build.sh
+```
 
-- Root directory: `frontend`
-- Build command: `npm run build`
-- Output directory: `dist`
-- Environment variable: `VITE_API_URL=<your backend>/api`
+Start command:
 
-## Notes
+```bash
+gunicorn lms_api.wsgi:application
+```
 
-This project is designed to be submission-ready as a full-stack LMS foundation. The backend is self-contained and can replace or complement the unavailable deployed API. If the original OSTAD boilerplate has additional endpoint names, only the API service layer needs adaptation.
+Set:
+
+```env
+DEBUG=False
+DJANGO_SECRET_KEY=<strong-secret>
+ALLOWED_HOSTS=*
+CORS_ALLOWED_ORIGINS=https://<your-vercel-app>.vercel.app
+DATABASE_URL=<Render PostgreSQL connection string>
+```
+
+### Frontend — Vercel
+
+Set:
+
+```env
+VITE_API_URL=https://<your-backend>.onrender.com/api
+```
+
+The included `vercel.json` handles React Router history fallback.
+
+## API alignment
+
+The supplied documentation uses the deployed backend base URL:
+
+`https://lms-backend-xpwc.onrender.com`
+
+This frontend can point to that deployment simply by setting:
+
+```env
+VITE_API_URL=https://lms-backend-xpwc.onrender.com/api
+```
+
+The supplied documentation does not define a lesson-completion endpoint, so this implementation adds:
+
+```text
+POST   /api/lessons/<id>/complete/
+DELETE /api/lessons/<id>/complete/
+GET    /api/progress/
+```
+
+These endpoints are required to make the project-plan requirement “mark lessons as completed” and course progress functional.
